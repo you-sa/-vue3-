@@ -2,7 +2,7 @@
  * @Author: liuzheng 8330460+wx_3078dad3bd@user.noreply.gitee.com
  * @Date: 2023-09-12 22:01:29
  * @LastEditors: liuzheng 8330460+wx_3078dad3bd@user.noreply.gitee.com
- * @LastEditTime: 2023-09-14 21:53:47
+ * @LastEditTime: 2023-09-15 21:58:50
  * @FilePath: \vite-project\src\views\Home\components\Header.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -25,29 +25,26 @@
 
     <!-- 搜索框 -->
     <div class="flex align-center ml40">
-      <el-popover placement="bottom" trigger="click" :width="300">
+      <el-popover placement="bottom" trigger="click" :width="340">
         <template #reference>
           <el-input
-            @focus="
-              {
-                console.log('focus');
-              }
-            "
-            @change="
-              {
-                console.log('change');
-              }
-            "
+            @focus="hotlist()"
+            @change="console.log('change')"
             :placeholder="showKeyword"
             :prefix-icon="Search"
-            @keyup.enter="
-              {
-                console.log('回车');
-              }
-            "
+            @keyup.enter="console.log('回车')"
           />
         </template>
-        <div>热搜榜</div>
+        <div style="overflow-y: auto; height: 400px">
+          <div class="mb20">热搜榜</div>
+          <TopSearch
+            class="top-search"
+            v-for="(item, index) in hotDetail"
+            :key="index"
+            :detail="item"
+            :rank="index"
+          ></TopSearch>
+        </div>
       </el-popover>
     </div>
     <!-- 麦克风 -->
@@ -57,37 +54,22 @@
   </div>
 </template>   
 
-<script>
-import { searchDefault, searchhotdetail } from "@/api/search";
-import { ref, reactive } from "vue";
+<script setup>
+import { searchDefault, searcHotDetail } from "@/api/search";
+import { ref, reactive, onMounted } from "vue";
 import { Search } from "@element-plus/icons-vue";
-export default {
-  components: {
-    searchDefault,
-    searchhotdetail,
-  },
-  setup() {
-    const showKeyword = ref("");
-    const hotdetail = reactive("");
-    return {
-      showKeyword,
-      hotdetail,
-      Search,
-    };
-  },
+import TopSearch from "./TopSearch.vue";
 
-  mounted() {
-    searchDefault().then((res) => {
-      // console.log(res.data);
-      this.showKeyword = res.data.showKeyword;
-    });
-    searchhotdetail().then((res) => {
-      // console.log(res.data);
-      this.hotdetail = res.data;
-      // console.log(this.hotdetail);
-    });
-  },
-};
+const showKeyword = ref("");
+const hotDetail = reactive({});
+
+function hotlist() {
+  searcHotDetail().then((res) => (this.hotDetail = res.data));
+}
+
+onMounted(() => {
+  searchDefault().then((res) => (showKeyword.value = res.data.showKeyword));
+});
 </script>
 
 <style lang="scss" scoped>
@@ -101,13 +83,27 @@ export default {
     height: 30px;
   }
 
+  .el-input {
+    --el-input-border-color: #e33e3e;
+    --el-input-hover-border-color: #e33e3e;
+    --el-input-focus-border-color: #e33e3e;
+  }
+
   ::v-deep .el-input__wrapper {
     background-color: transparent;
     border-radius: 30px;
+  }
+
+  ::v-deep .el-popper__arrow::before {
+    display: none;
   }
 }
 
 .header-container-title {
   color: aliceblue;
+}
+
+.top-search:hover {
+  background-color: #f2f2f2;
 }
 </style>

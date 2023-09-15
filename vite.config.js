@@ -49,5 +49,11 @@ export default defineConfig({
             },
         },
     },
+    env: {
+        node: true,
+        // The Follow config only works with eslint-plugin-vue v8.0.0+
+        "vue/setup-compiler-macros": true,
+    },
+
     resolve: { alias: { "@": resolve(__dirname, "./src/") } },
 });
