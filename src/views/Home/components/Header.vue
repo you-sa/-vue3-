@@ -1,11 +1,3 @@
-<!--
- * @Author: liuzheng 8330460+wx_3078dad3bd@user.noreply.gitee.com
- * @Date: 2023-09-12 22:01:29
- * @LastEditors: liuzheng 8330460+wx_3078dad3bd@user.noreply.gitee.com
- * @LastEditTime: 2023-09-15 21:58:50
- * @FilePath: \vite-project\src\views\Home\components\Header.vue
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
 <template>
   <div class="header-container flex">
     <!--标题 -->
@@ -27,18 +19,31 @@
     <div class="flex align-center ml40">
       <el-popover placement="bottom" trigger="click" :width="340">
         <template #reference>
+          <!-- :prefix-icon="Search":搜索图标 -->
           <el-input
-            @focus="hotlist()"
+            v-model="searchContent"
+            @focus="hotList()"
             @change="console.log('change')"
             :placeholder="showKeyword"
             :prefix-icon="Search"
-            @keyup.enter="console.log('回车')"
+            @keyup.enter="searchSong"
           />
         </template>
         <div style="overflow-y: auto; height: 400px">
-          <div class="mb20">热搜榜</div>
+          <div>搜索历史</div>
+          <el-button
+            class="mr8 mt10"
+            size="small"
+            round
+            v-for="(item, index) in searchList"
+            :key="item.searchWord"
+            >{{ item }}
+            <el-icon @click="deleteSearchHistory(index)"><Close /></el-icon
+          ></el-button>
+          <div class="mt20 mb20">热搜榜</div>
           <TopSearch
             class="top-search"
+            @click="searchHot(item)"
             v-for="(item, index) in hotDetail"
             :key="index"
             :detail="item"
@@ -55,18 +60,44 @@
 </template>   
 
 <script setup>
-import { searchDefault, searcHotDetail } from "@/api/search";
-import { ref, reactive, onMounted } from "vue";
+import { searchDefault, searchHotDetail } from "@/api/search";
+import { ref, reactive, onMounted, computed } from "vue";
 import { Search } from "@element-plus/icons-vue";
 import TopSearch from "./TopSearch.vue";
+import store from "@/store/index.js";
 
 const showKeyword = ref("");
 const hotDetail = reactive({});
+const searchList = computed(() => store.state.search.searchList).value;
+const searchContent = ref("");
 
-function hotlist() {
-  searcHotDetail().then((res) => (this.hotDetail = res.data));
+// 获取热搜榜
+function hotList() {
+  searchHotDetail().then((res) => (this.hotDetail = res.data));
 }
-
+// 回车搜索
+function searchSong() {
+  if (searchContent.value.length > 0) {
+    addSearch(searchContent.value);
+  } else {
+    addSearch(showKeyword.value);
+  }
+}
+// 添加搜索历史
+function addSearch(value) {
+  searchList.unshift(value);
+  store.commit("search/setSearchList", searchList);
+}
+// 删除一个搜索记录
+function deleteSearchHistory(index) {
+  searchList.splice(index, 1);
+  store.commit("search/setSearchList", searchList);
+}
+// 点击热榜
+function searchHot(item) {
+  addSearch(item.searchWord);
+}
+// 获取默认搜索值
 onMounted(() => {
   searchDefault().then((res) => (showKeyword.value = res.data.showKeyword));
 });

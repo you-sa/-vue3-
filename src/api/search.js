@@ -10,15 +10,15 @@ import axios from "../utils/request";
 
 // 获取默认搜索
 export const searchDefault = () => {
-    return axios({
-        url: "/api/search/default",
-        method: "post",
-    });
+  return axios({
+    url: "/api/search/default",
+    method: "post",
+  });
 };
 
-export const searcHotDetail = () => {
-    return axios({
-        url: "/api/search/hot/detail",
-        method: "post",
-    });
+export const searchHotDetail = () => {
+  return axios({
+    url: "/api/search/hot/detail",
+    method: "post",
+  });
 };

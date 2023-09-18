@@ -55,7 +55,7 @@ export default {
 
 <style lang="scss" scoped>
 .topSearch-detail {
-  width: 270px;
+  width: 300px;
   height: 50px;
   cursor: pointer;
 
