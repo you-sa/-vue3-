@@ -16,9 +16,18 @@ export const searchDefault = () => {
   });
 };
 
+// 获取热榜
 export const searchHotDetail = () => {
   return axios({
     url: "/api/search/hot/detail",
+    method: "post",
+  });
+};
+// 获取搜索建议
+
+export const searchSuggest = (keywords) => {
+  return axios({
+    url: `/api/search/suggest?keywords=${keywords}`,
     method: "post",
   });
 };
