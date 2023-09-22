@@ -116,22 +116,70 @@
     </div>
   </div>
   <!-- 登录框 -->
-  <div>
-    <el-dialog
-      v-model="LoginBox"
-      class="flex justify-center"
-      width="30%"
-      :before-close="handleClose"
-    >
-      <h1 style="">扫码登录</h1>
+
+  <el-dialog v-model="LoginBox" width="30%" :before-close="handleClose" center>
+    <div class="flex justify-center">
+      <h1 class="align-center" style="">扫码登录</h1>
+    </div>
+    <div class="flex justify-center">
       <img :src="qrUrl" alt="" />
-    </el-dialog>
-  </div>
+    </div>
+
+    <div @click="otherLogin" class="flex justify-center">选择其他登录方式></div>
+  </el-dialog>
+
+  <el-dialog v-model="otherLoginBox" width="30%">
+    <div class="flex justify-center">
+      <img src="@/assets/img/music.jpg" style="width: 50px; height: 50px" />
+    </div>
+    <!-- 手机号输入框 -->
+    <div class="flex justify-center pt50 pl40" style="width: 80%">
+      <el-input
+        v-model="phone"
+        placeholder="请输入手机号"
+        style="width: 300px; height: 40px"
+      >
+        <!-- 地区码插槽 -->
+        <template #prepend>
+          <el-select
+            v-model="district"
+            placeholder="Select"
+            style="width: 80px; height: 40px"
+          >
+            <el-option label="+852" value="1" />
+          </el-select>
+        </template>
+      </el-input>
+    </div>
+    <!-- 密码输入框 -->
+    <div class="flex justify-center pl40" style="width: 80%">
+      <el-input
+        v-model="password"
+        placeholder="请输入密码"
+        style="width: 300px; height: 40px"
+      >
+      </el-input>
+    </div>
+    <!-- 提示信息 -->
+    <div class="flex pl50" style="color: red" v-show="tips">
+      {{ tipContent }}
+    </div>
+    <!-- 登录按钮 -->
+    <div class="flex justify-center pt50">
+      <el-button
+        type="danger"
+        style="width: 300px; height: 40px"
+        color="#ff3a3a"
+        @click="phoneLogin(phone, password)"
+        >登录</el-button
+      >
+    </div>
+  </el-dialog>
 </template>   
 
 <script setup>
 import { searchDefault, searchHotDetail, searchSuggest } from "@/api/search";
-import { longInKey, qrCreate, qrCheck } from "@/api/login.js";
+import { longInKey, qrCreate, qrCheck, loginCellPhone } from "@/api/login.js";
 import { ref, reactive, onMounted, computed, toRefs } from "vue";
 import { Search } from "@element-plus/icons-vue";
 import TopSearch from "./TopSearch.vue";
@@ -143,18 +191,27 @@ const searchList = computed(() => store.state.search.searchList).value;
 const searchContent = ref("");
 const showSearchPopover = ref(false);
 const qrUrl = ref("");
-// 单曲，歌手，专辑，歌单
-let { songs, artists, albums, playlists } = reactive({});
+
 // 登录消息框
 let LoginBox = ref(false);
+let otherLoginBox = ref(false);
 
+// 计时器
+let timeFun;
+// 单曲，歌手，专辑，歌单
 let suggestions = reactive({
   songs: [],
   artists: [],
   albums: [],
   playlists: [],
 });
+// 地区码
+let district = ref("+86");
 
+let phone = ref("");
+let password = ref("");
+let tips = ref(false);
+const tipContent = ref("");
 // 获取热搜榜
 function hotList() {
   searchHotDetail().then((res) => {
@@ -214,45 +271,7 @@ function getSuggest() {
     });
   }
 }
-// async function showLogin() {
-//   LoginBox.value = true;
-//   let nowTime = new Date();
-//   // 获取key
-//   let key = (await longInKey(nowTime)).data.unikey;
-//   // 获取二维码图片
-//   qrUrl.value = (await qrCreate(key)).data.qrimg;
-//   // 每三秒check一次
-//   let check = setInterval(async () => {
-//     let now = new Date().getTime();
-//     let res = await qrCheck(key, now).then();
-//     // 二维码已过期
-//     if (res.code == 800) {
-//       ElMessage({
-//         message: res.message,
-//         type: "warning",
-//       });
-//       clearInterval(check);
-//     }
-//     // 待确认
-//     // if (res.code == 802) {
-//     //   ElMessage({
-//     //     message: res.data.message,
-//     //     type: "warning",
-//     //   });
-//     //   clearInterval(check);
-//     // }
-//     // 授权成功
-//     if (res.code == 803) {
-//       ElMessage({
-//         message: res.message,
-//         type: "success",
-//       });
-//       clearInterval(check);
-//       console.log(res);
-//       // getInfo(res.cookie)
-//     }
-//   }, 3000);
-// }
+
 // 登录页面
 async function showLogin() {
   let time = new Date();
@@ -266,7 +285,7 @@ async function showLogin() {
   await qrCreate(key).then((res) => {
     qrUrl.value = res.data.qrimg;
   });
-  let timeFun = setInterval(async () => {
+  timeFun = setInterval(async () => {
     let now = new Date().getTime();
     let res = await qrCheck(key, now).then();
     console.log(111);
@@ -291,6 +310,34 @@ async function showLogin() {
       LoginBox.value = false;
     }
   }, 3000);
+}
+
+// 点击其他登录方式
+
+function otherLogin() {
+  LoginBox.value = false;
+  clearInterval(timeFun);
+  otherLoginBox.value = true;
+}
+
+function phoneLogin(phone, password) {
+  loginCellPhone(phone, password).then((res) => {
+    console.log(res);
+    if (res.code == 200) {
+      console.log("登录成功");
+      otherLoginBox.value = false;
+    }
+    if (res.code == 400) {
+      tips.value = true;
+      tipContent.value = "请输入密码";
+      console.log(tipContent);
+    }
+    if (res.code == 502) {
+      tipContent.value = "手机号或密码错误";
+      console.log();
+      tips.value = true;
+    }
+  });
 }
 </script>
 
@@ -320,7 +367,9 @@ async function showLogin() {
     display: none;
   }
 }
-
+::v-deep .el-dialog__header {
+  display: none;
+}
 .header-container-title {
   color: aliceblue;
 }
