@@ -12,48 +12,50 @@ import vue from "@vitejs/plugin-vue";
 import { resolve } from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [
-        vue(),
-        // , AutoImport({
-        //     resolvers: [ElementPlusResolver()],
-        // }),
-        // Components({
-        //     resolvers: [ElementPlusResolver()],
-        // }),
-    ],
+  plugins: [
+    vue(),
+    // , AutoImport({
+    //     resolvers: [ElementPlusResolver()],
+    // }),
+    // Components({
+    //     resolvers: [ElementPlusResolver()],
+    // }),
+  ],
 
-    css: {
-        postcss: {
-            plugins: [{
-                postcssPlugin: "internal:charset-removal",
-                AtRule: {
-                    charset: (atRule) => {
-                        if (atRule.name === "charset") {
-                            atRule.remove();
-                        }
-                    },
-                },
-            }, ],
-        },
-    },
-    server: {
-        //用来配置跨域
-        host: true,
-        port: 8008,
-        open: true,
-        proxy: {
-            "/api": {
-                target: "http://localhost:3000", //目标服务器地址
-                changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, ""),
+  css: {
+    postcss: {
+      plugins: [
+        {
+          postcssPlugin: "internal:charset-removal",
+          AtRule: {
+            charset: (atRule) => {
+              if (atRule.name === "charset") {
+                atRule.remove();
+              }
             },
+          },
         },
+      ],
     },
-    env: {
-        node: true,
-        // The Follow config only works with eslint-plugin-vue v8.0.0+
-        "vue/setup-compiler-macros": true,
+  },
+  server: {
+    //用来配置跨域
+    host: true,
+    port: 8008,
+    open: true,
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000", //目标服务器地址
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ""),
+      },
     },
+  },
+  env: {
+    node: true,
+    // The Follow config only works with eslint-plugin-vue v8.0.0+
+    "vue/setup-compiler-macros": true,
+  },
 
-    resolve: { alias: { "@": resolve(__dirname, "./src/") } },
+  resolve: { alias: { "@": resolve(__dirname, "./src/") } },
 });

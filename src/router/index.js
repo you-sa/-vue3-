@@ -11,25 +11,38 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
-    history: createWebHistory(), // history 模式
-    routes: [{
-        path: "/",
-        name: "home",
-        component: () =>
-            import (`../views/Home/index.vue`),
-        meta: {
-            title: "首页",
+  history: createWebHistory(), // history 模式
+  routes: [
+    {
+      path: "/",
+      name: "home",
+      component: () => import(`../views/Home/index.vue`),
+      meta: {
+        title: "首页",
+      },
+      children: [
+        {
+          path: "/findMusic",
+          name: "findMusic",
+          component: () => import("../views/Home/Find/index.vue"),
         },
-    }, ],
+        {
+          path: "/podcast",
+          name: "podcast",
+          component: () => import("../views/Home/podcast/index.vue"),
+        },
+      ],
+    },
+  ],
 });
 
 // 全局路由守卫
 router.beforeEach((to, from, next) => {
-    // console.log(to, from)
-    if (to.meta.title) {
-        document.title = `${to.meta.title}`;
-    }
-    next();
+  // console.log(to, from)
+  if (to.meta.title) {
+    document.title = `${to.meta.title}`;
+  }
+  next();
 });
 
 export default router;

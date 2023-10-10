@@ -1,11 +1,4 @@
-<!--
- * @Author: liuzheng 8330460+wx_3078dad3bd@user.noreply.gitee.com
- * @Date: 2023-09-13 19:58:28
- * @LastEditors: liuzheng 8330460+wx_3078dad3bd@user.noreply.gitee.com
- * @LastEditTime: 2023-09-14 20:47:44
- * @FilePath: \vite-project\src\views\Home\components\Navigation.vue
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
+
 <template>
   <div class="Navigation-container">
     <div class="nav-pane pt20 pl20">
@@ -65,14 +58,18 @@
 
 <script>
 import { ref, reactive } from "vue";
+import { useRouter } from "vue-router";
 export default {
   setup() {
+    const router = useRouter();
     const navList = ref([
       {
         title: "发现音乐",
+        router: "findMusic",
       },
       {
         title: "播客",
+        router: "podcast",
       },
       {
         title: "视频",
@@ -111,6 +108,11 @@ export default {
 
     function checkNode(node) {
       curNode.title = node.title;
+      console.log(111);
+      console.log(node.router);
+      router.push({
+        name: node.router,
+      });
     }
     return {
       navList,
